@@ -1,6 +1,7 @@
 package discogs
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 )
@@ -8,7 +9,7 @@ import (
 const (
 	libraryVersion = "1.0.0"
 	defaultBaseURL = "https://api.discogs.com/"
-	userAgent      = "BifidokkDiscogsGoAPIClient/" + libraryVersion
+	userAgent      = "discogs-go/" + libraryVersion
 )
 
 type Client struct {
@@ -40,4 +41,23 @@ func New(httpClient *http.Client, opts ...ClientOpt) (*Client, error) {
 	}
 
 	return c, nil
+}
+
+func SetBaseURL(baseURL string) ClientOpt {
+	return func(c *Client) error {
+		u, err := url.Parse(baseURL)
+		if err != nil {
+			return err
+		}
+
+		c.BaseURL = u
+		return nil
+	}
+}
+
+func SetUserAgent(ua string) ClientOpt {
+	return func(c *Client) error {
+		c.UserAgent = fmt.Sprintf("%s %s", ua, c.UserAgent)
+		return nil
+	}
 }
