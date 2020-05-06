@@ -31,6 +31,12 @@ func teardown() {
 	server.Close()
 }
 
+func testMethod(t *testing.T, r *http.Request, expected string) {
+	if expected != r.Method {
+		t.Errorf("Request method = %v, expected %v", r.Method, expected)
+	}
+}
+
 func TestNewClient(t *testing.T) {
 	c := NewClient(nil)
 	testClientDefaults(t, c)
@@ -161,5 +167,21 @@ func TestDo(t *testing.T) {
 	expected := &foo{"a"}
 	if !reflect.DeepEqual(body, expected) {
 		t.Errorf("Response body = %v, expected %v", body, expected)
+	}
+}
+
+func TestDo_httpError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Bad Request", 400)
+	})
+
+	req, _ := client.NewRequest(ctx, http.MethodGet, "/", nil)
+	_, err := client.Do(context.Background(), req, nil)
+
+	if err == nil {
+		t.Error("Expected HTTP 400 error.")
 	}
 }

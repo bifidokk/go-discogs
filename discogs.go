@@ -24,6 +24,8 @@ type Client struct {
 	client    *http.Client
 	BaseURL   *url.URL
 	UserAgent string
+
+	Release ReleaseService
 }
 
 type Response struct {
@@ -52,6 +54,7 @@ func NewClient(httpClient *http.Client) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 
 	c := &Client{client: httpClient, BaseURL: baseURL, UserAgent: userAgent}
+	c.Release = &ReleaseServiceOp{client: c}
 
 	return c
 }
