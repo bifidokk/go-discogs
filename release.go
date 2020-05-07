@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 const releaseBasePath = "/releases/"
 
 type ReleaseService interface {
-	Get(context.Context, int) (*Release, *Response, error)
+	Get(context.Context, int, string) (*Release, *Response, error)
 }
 
 type ReleaseServiceOp struct {
@@ -19,35 +20,49 @@ type ReleaseServiceOp struct {
 var _ ReleaseService = &ReleaseServiceOp{}
 
 type Release struct {
-	Title             string   `json:"title"`
-	ID                int      `json:"id"`
-	ArtistsSort       string   `json:"artists_sort"`
-	DataQuality       string   `json:"data_quality"`
-	Thumb             string   `json:"thumb"`
-	Country           string   `json:"country"`
-	DateAdded         string   `json:"date_added"`
-	DateChanged       string   `json:"date_changed"`
-	EstimatedWeight   int      `json:"estimated_weight"`
-	FormatQuantity    int      `json:"format_quantity"`
-	Genres            []string `json:"genres"`
-	LowestPrice       float64  `json:"lowest_price"`
-	MasterID          int      `json:"master_id"`
-	MasterURL         string   `json:"master_url"`
-	Notes             string   `json:"notes,omitempty"`
-	NumForSale        int      `json:"num_for_sale,omitempty"`
-	Released          string   `json:"released"`
-	ReleasedFormatted string   `json:"released_formatted"`
-	ResourceURL       string   `json:"resource_url"`
-	Status            string   `json:"status"`
-	Styles            []string `json:"styles"`
-	URI               string   `json:"uri"`
-	Year              int      `json:"year"`
+	Title             string          `json:"title"`
+	ID                int             `json:"id"`
+	Artists           []ReleaseArtist `json:"artists"`
+	DataQuality       string          `json:"data_quality"`
+	Thumb             string          `json:"thumb"`
+	Community         []Community     `json:"community"`
+	Country           string          `json:"country"`
+	Companies         []Company       `json:"companies"`
+	DateAdded         string          `json:"date_added"`
+	DateChanged       string          `json:"date_changed"`
+	EstimatedWeight   int             `json:"estimated_weight"`
+	ExtraArtists      []ReleaseArtist `json:"extraartists"`
+	FormatQuantity    int             `json:"format_quantity"`
+	Formats           []Format        `json:"formats"`
+	Genres            []string        `json:"genres"`
+	Identifiers       []Identifier    `json:"identifiers"`
+	Images            []Image         `json:"images"`
+	Labels            []LabelSource   `json:"labels"`
+	LowestPrice       float64         `json:"lowest_price"`
+	MasterID          int             `json:"master_id"`
+	MasterURL         string          `json:"master_url"`
+	Notes             string          `json:"notes,omitempty"`
+	NumForSale        int             `json:"num_for_sale,omitempty"`
+	Released          string          `json:"released"`
+	ReleasedFormatted string          `json:"released_formatted"`
+	ResourceURL       string          `json:"resource_url"`
+	Series            []Series        `json:"series"`
+	Status            string          `json:"status"`
+	Styles            []string        `json:"styles"`
+	Tracklist         []Track         `json:"tracklist"`
+	URI               string          `json:"uri"`
+	Videos            []Video         `json:"videos"`
+	Year              int             `json:"year"`
 }
 
-func (rls *ReleaseServiceOp) Get(ctx context.Context, releaseID int) (*Release, *Response, error) {
+func (rls *ReleaseServiceOp) Get(ctx context.Context, releaseID int, cur string) (*Release, *Response, error) {
+	currAbbr, err := currency(cur)
+	params := url.Values{}
+	params.Set("curr_abbr", currAbbr)
+
 	path := fmt.Sprintf("%s/%d", releaseBasePath, releaseID)
 
-	req, err := rls.client.NewRequest(ctx, http.MethodGet, path, nil)
+	req, err := rls.client.NewRequest(ctx, http.MethodGet, path, params, nil)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -94,7 +94,11 @@ func SetUserToken(token string) ClientOpt {
 	}
 }
 
-func (c *Client) NewRequest(ctx context.Context, method, urlStr string, body interface{}) (*http.Request, error) {
+func (c *Client) NewRequest(ctx context.Context, method, urlStr string, params url.Values, body interface{}) (*http.Request, error) {
+	if params != nil {
+		urlStr = urlStr + "?" + params.Encode()
+	}
+
 	u, err := c.BaseURL.Parse(urlStr)
 	if err != nil {
 		return nil, err

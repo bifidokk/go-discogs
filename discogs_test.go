@@ -127,7 +127,7 @@ func TestNewRequest(t *testing.T) {
 
 	inURL, outURL := "/foo", defaultBaseURL+"foo"
 	inBody, outBody := &AddToWantlistRequest{}, `{}`+"\n"
-	req, _ := c.NewRequest(ctx, http.MethodGet, inURL, inBody)
+	req, _ := c.NewRequest(ctx, http.MethodGet, inURL, nil, inBody)
 
 	// test relative URL was expanded
 	if req.URL.String() != outURL {
@@ -162,7 +162,7 @@ func TestDo(t *testing.T) {
 		fmt.Fprint(w, `{"A":"a"}`)
 	})
 
-	req, _ := client.NewRequest(ctx, http.MethodGet, "/", nil)
+	req, _ := client.NewRequest(ctx, http.MethodGet, "/", nil, nil)
 	body := new(foo)
 	_, err := client.Do(context.Background(), req, body)
 	if err != nil {
@@ -183,7 +183,7 @@ func TestDo_httpError(t *testing.T) {
 		http.Error(w, "Bad Request", 400)
 	})
 
-	req, _ := client.NewRequest(ctx, http.MethodGet, "/", nil)
+	req, _ := client.NewRequest(ctx, http.MethodGet, "/", nil, nil)
 	_, err := client.Do(context.Background(), req, nil)
 
 	if err == nil {

@@ -16,7 +16,7 @@ func TestRelease_GetRelease(t *testing.T) {
 		fmt.Fprint(w, `{"title": "Never Gonna Give You Up", "id": 249504, "year": 1987}`)
 	})
 
-	release, _, err := client.Release.Get(ctx, 249504)
+	release, _, err := client.Release.Get(ctx, 249504, "")
 	if err != nil {
 		t.Errorf("Release.Get returned error: %v", err)
 	}
