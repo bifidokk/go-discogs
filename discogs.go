@@ -9,8 +9,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-
-	"golang.org/x/oauth2"
 )
 
 const (
@@ -21,9 +19,10 @@ const (
 )
 
 type Client struct {
-	client    *http.Client
-	BaseURL   *url.URL
-	UserAgent string
+	client      *http.Client
+	BaseURL     *url.URL
+	UserAgent   string
+	AccessToken string
 
 	Release ReleaseService
 }
@@ -37,13 +36,10 @@ type ErrorResponse struct {
 	Message  string `json:"message"`
 }
 
-func NewFromToken(token string) *Client {
-	ctx := context.Background()
+func NewFromToken(token string) (*Client, error) {
+	c, err := New(nil, SetUserToken(token))
 
-	config := &oauth2.Config{}
-	ts := config.TokenSource(ctx, &oauth2.Token{AccessToken: token})
-
-	return NewClient(oauth2.NewClient(ctx, ts))
+	return c, err
 }
 
 func NewClient(httpClient *http.Client) *Client {
@@ -91,6 +87,13 @@ func SetUserAgent(ua string) ClientOpt {
 	}
 }
 
+func SetUserToken(token string) ClientOpt {
+	return func(c *Client) error {
+		c.AccessToken = token
+		return nil
+	}
+}
+
 func (c *Client) NewRequest(ctx context.Context, method, urlStr string, body interface{}) (*http.Request, error) {
 	u, err := c.BaseURL.Parse(urlStr)
 	if err != nil {
@@ -111,6 +114,7 @@ func (c *Client) NewRequest(ctx context.Context, method, urlStr string, body int
 	}
 
 	req.Header.Add("Accept", mediaType)
+	req.Header.Add("Authorization", fmt.Sprintf("Discogs token=%s", c.AccessToken))
 	req.Header.Add("Content-Type", mediaType)
 	req.Header.Add("User-Agent", c.UserAgent)
 
