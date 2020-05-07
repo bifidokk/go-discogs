@@ -23,8 +23,8 @@ func setup() {
 	server = httptest.NewServer(mux)
 
 	client = NewClient(nil)
-	url, _ := url.Parse(server.URL)
-	client.BaseURL = url
+	u, _ := url.Parse(server.URL)
+	client.BaseURL = u
 }
 
 func teardown() {
@@ -43,7 +43,12 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestNewFromToken(t *testing.T) {
-	c := NewFromToken("my-token")
+	c, err := NewFromToken("my-token")
+
+	if err != nil {
+		t.Fatalf("NewFromToken(): %v", err)
+	}
+
 	testClientDefaults(t, c)
 }
 
